@@ -334,11 +334,12 @@ def main(args):
 
     while True:
         for i, binlog_file in enumerate(binlog_file_list):
-            if not (i == 0 and binlog_file == args.start_file):
+            if args.file_dir and not (i == 0 and binlog_file == args.start_file):
                 args.start_pos = None
                 args.end_pos = None
             logger.info('parsing binlog file: %s [%s]' %
                         (binlog_file, timestamp_to_datetime(os.stat(binlog_file).st_mtime)))
+
             bin2sql = BinlogFile2sql(
                 file_path=binlog_file, connection_settings=connection_settings, start_pos=args.start_pos,
                 end_pos=args.end_pos, start_time=args.start_time, stop_time=args.stop_time,
