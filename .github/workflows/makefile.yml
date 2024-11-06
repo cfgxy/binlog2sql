@@ -4,6 +4,7 @@ on:
   push:
     tags:
       - 'v*'  # 仅在推送标签时触发
+  workflow_dispatch:
 
 jobs:
   build:
