@@ -21,9 +21,9 @@ jobs:
         run: |
           if [[ "${{ matrix.os }}" == "ubuntu-20.04" || "${{ matrix.os }}" == "ubuntu-22.04" ]]; then
             sudo apt-get update
-            sudo apt-get install -y python3.8 python3.8-dev python3-pip upx
+            sudo apt-get install -y python3.6 python3-pip upx
           elif [[ "${{ matrix.os }}" == "windows-latest" ]]; then
-            choco install python --version=3.8
+            choco install python --version=3.6
             choco install upx
           elif [[ "${{ matrix.os }}" == "centos:7" ]]; then
             sudo yum install -y python36 python36-pip
@@ -31,8 +31,8 @@ jobs:
 
       - name: Run make release
         run: |
-          pip install -r requirements.txt
-          pyinstaller --distpath dist/ -F binlogfile2sql.py -s --optimize 2 -p . --exclude-module dist
+          pip3.6 install -r requirements.txt
+          python3.6 -m pyinstaller --distpath dist/ -F binlogfile2sql.py -s --optimize 2 -p . --exclude-module dist
           upx dist/binlogfile2sql
           if [[ "${{ matrix.os }}" == "windows-latest" ]]; then
             upx dist/binlogfile2sql.exe
