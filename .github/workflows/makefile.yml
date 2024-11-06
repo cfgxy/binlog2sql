@@ -1,18 +1,46 @@
-name: Makefile CI
+name: Build and Release
 
 on:
   push:
-    branches: [ "master" ]
-  pull_request:
-    branches: [ "master" ]
+    tags:
+      - 'v*'  # 仅在推送标签时触发
 
 jobs:
   build:
-
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-20.04, ubuntu-22.04, windows-latest, centos:7]
 
     steps:
-    - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Install dependencies
-      run: make
+      - name: Set up environment
+        run: |
+          if [[ "${{ matrix.os }}" == "ubuntu-20.04" || "${{ matrix.os }}" == "ubuntu-22.04" ]]; then
+            sudo apt-get update
+            sudo apt-get install -y python3.8 python3.8-dev python3-pip upx
+          elif [[ "${{ matrix.os }}" == "windows-latest" ]]; then
+            choco install python --version=3.8
+            choco install upx
+          elif [[ "${{ matrix.os }}" == "centos:7" ]]; then
+            sudo yum install -y python36 python36-pip
+          fi
+
+      - name: Run make release
+        run: |
+          pip install -r requirements.txt
+          pyinstaller --distpath dist/ -F binlogfile2sql.py -s --optimize 2 -p . --exclude-module dist
+          upx dist/binlogfile2sql
+          if [[ "${{ matrix.os }}" == "windows-latest" ]]; then
+            upx dist/binlogfile2sql.exe
+          else
+            upx dist/binlogfile2sql
+          fi
+
+      - name: Upload Release Assets
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ format('binlogfile2sql-{0}', matrix.os) }}
+          path: dist/binlogfile2sql*
